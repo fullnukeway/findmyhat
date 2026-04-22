@@ -1,14 +1,15 @@
+// * Initializing the prompt-sync module to allow for user input in the terminal, with the option to handle SIGINT (Ctrl+C) gracefully.
 import PromptSync from "prompt-sync";
-const prompt = PromptSync({ sigint: true }); // * Initializing the prompt-sync module to allow for user input in the terminal, with the option to handle SIGINT (Ctrl+C) gracefully.
+const prompt = PromptSync({ sigint: true });
 
-// * Game elements/assets constants
+// * Setting the game elements/assets constants
 const HAT = "^";
 const HOLE = "O";
 const GRASS = "░";
 const PLAYER = "*";
 
 
-// * UP / DOWN / LEFT / RIGHT / QUIT keyboard constants
+// * Setting the constants for the user's input: UP / DOWN / LEFT / RIGHT / QUIT keyboard 
 const UP = "W";
 const DOWN = "S";
 const LEFT = "A";
@@ -16,7 +17,7 @@ const RIGHT = "D";
 const QUIT = "Q";
 
 
-// *MSG_UP / MSG_DOWN / MSG_LEFT / MSG_RIGHT / MSG_ QUIT / MSG_INVALID message constants
+// * Setting the constants for the messages to show the user after their input: FEEDBACK_UP / FEEDBACK_DOWN / FEEDBACK_LEFT / FEEDBACK_RIGHT / FEEDBACK_ QUIT / FEEDBACK_INVALID
 const FEEDBACK_UP = "You moved up!";
 const FEEDBACK_DOWN = "You moved down!";
 const FEEDBACK_LEFT = "You moved left!";
@@ -25,7 +26,7 @@ const FEEDBACK_QUIT = "You have quit the game!";
 const FEEDBACK_INVALID = "Invalid entry!";
 
 
-// *WIN / LOSE / OUT / SAFE / QUIT messages constants
+// * Setting the constants for the messages to show the user after their move: FEEDBACK_WIN_MSG / FEEDBACK_LOSE_MSG / FEEDBACK_OUT_MSG / FEEDBACK_SAFE_MSG / FEEDBACK_QUIT_MSG
 const FEEDBACK_WIN_MSG = "Congratulations! You won!";
 const FEEDBACK_LOSE_MSG = "You fell into a hole. Game Over!";
 const FEEDBACK_OUT_MSG = "You stepped out of the platform. Game Over!";
@@ -33,110 +34,156 @@ const FEEDBACK_SAFE_MSG = "You moved to a safe spot.";
 const FEEDBACK_QUIT_MSG = "You have quit the game. Thank you for playing.";
 
 
-// *MAP ROWS, COLUMNS AND PERCENTAGE
+// *Defining the const for the number of rows and columns for the game map + the percentage of holes to grass when generating the game map
 const ROWS = 8;
 const COLS = 5;
 const PERCENT = 0.2; /* Percentage on the number of holes in the game map*/
 
 
-// * Field class to create the game field and implement the game logic
+// * Creating the Field class to create the game field and implement the game logic
 class Field {
-  // * constructor, a built-in method of a class (invoked when an object of a class is instantiated)
+
+  // * Defining the constructor which is a built-in method of a class (invoked when an object of a class is instantiated)
   constructor(field = [[]]) {
     this.field = field;
     this.gamePlay = false;
   }
 
 
-  // * generateField is a static method, returning a 2D array of the fields
+  // * Using generateField as a static method. This returns a 2D array of the fields.
   static generateField(rows, columns, percentage) {
 
     const map = [[]];
 
     for (let i = 0; i < rows; i++) {
-      map[i] = []; // generate the row  for the map
+      map[i] = [];                                          /* generate the row  for the map */
 
       for (let j = 0; j < columns; j++) {
-        map[i][j] = Math.random() < PERCENT ? HOLE : GRASS; // ~80% GRASS, ~20% HOLES
+        map[i][j] = Math.random() < PERCENT ? HOLE : GRASS; /* ~80% GRASS, ~20% HOLES */
       }
 
     }
 
-    return map; // return the generated 2D array
+    return map;                                             /* return the generated 2D array */
   }
 
 
-  // * welcomeMessage is a static method, displays a string
+  // * Using welcomeMessage as a static method to display a string
   static welcomeMsg(Msg) {
     console.log(Msg);
   }
 
 
-  // * setHat positions the hat along a random x and y position within field array
+  // * Using setHat method to position the hat along a random position in the game map (random x and y position within field array)
   setHat() {
-    
-    const x = Math.floor(Math.random() * (ROWS - 1) + 1); // establish a random position of X in the field
-    
-    const y = Math.floor(Math.random() * (COLS - 1) + 1); // establish a random position of Y in the field
-    
-    this.field[x][y] = HAT; // set the HAT along the derived random position this.field[x][y]
+
+    const x = Math.floor(Math.random() * (ROWS - 1) + 1); /* establish a random position of X in the field */
+
+    const y = Math.floor(Math.random() * (COLS - 1) + 1); /* establish a random position of Y in the field */
+
+    this.field[x][y] = HAT;                               /* set the HAT along the derived random position this.field[x][y] */
 
   }
 
-  // * printField displays the updated status of the field position
+  // * Using printField to join the elements in the game map together so that it looks nicer
   printField() {
 
-    this.field.forEach(row => console.log(row.join(" "))); // forEach method to iterate through each row of the field, and join method to display the elements of the row as a string with spaces in between
+    this.field.forEach(row => console.log(row.join(" "))); /* forEach method to iterate through each row of the field, and join method to display the elements of the row as a string with spaces in between */
 
   }
 
-  // TODO: updateMove displays the move (key) entered by the user
+  // * Using updateMove method to display the move (key) entered by the user
   updateMove(direction) {
     console.log(direction);
   }
 
 
-  // * updateGame Assessment Challenge
-  updateGame() {
+  // * Using updateGame method to handle the game logic based on user input
+  updateGame(input) {
 
-    // Check if the player moved out of the map
-    if (this.playerRow < 0 || this.playerRow >= ROWS || this.playerCol < 0 || this.playerCol >= COLS) {
-      console.log(FEEDBACK_OUT_MSG);
-      this.#end();
+    // Replace the player's current position with GRASS before moving
+    this.field[this.playerRow][this.playerCol] = GRASS;
+
+    // Handle movement based on input
+    switch (input) {
+      
+      case UP:
+        if (this.playerRow > 0) {
+          this.playerRow--;
+        } else {
+          console.log(FEEDBACK_OUT_MSG);
+          this.#end();
+          return;
+        }
+        break;
+
+      case DOWN:
+        if (this.playerRow < ROWS - 1) {
+          this.playerRow++;
+        } else {
+          console.log(FEEDBACK_OUT_MSG);
+          this.#end();
+          return;
+        }
+        break;
+
+      case LEFT:
+        if (this.playerCol > 0) {
+          this.playerCol--;
+        } else {
+          console.log(FEEDBACK_OUT_MSG);
+          this.#end();
+          return;
+        }
+        break;
+
+      case RIGHT:
+        if (this.playerCol < COLS - 1) {
+          this.playerCol++;
+        } else {
+          console.log(FEEDBACK_OUT_MSG);
+          this.#end();
+          return;
+        }
+        break;
+
+      default:
+        console.log(FEEDBACK_INVALID);
+        return;
     }
 
-    // Check the tile the player moved to
-    const currentTile = this.field[this.playerRow][this.playerCol];
-    switch (currentTile) {
+    // Check the position the player moved to
+    const currentPosition = this.field[this.playerRow][this.playerCol];
 
-      // If player moves falls into the HOLE, player loses the game. Pring the lose message and end the game.
+    switch (currentPosition) {
+
+      // If the player moves to a hole (i.e. x and y position of the player matches the x and y position of a hole), the game ends with a lose message
       case HOLE:
         console.log(FEEDBACK_LOSE_MSG);
         this.#end();
-        break;
+        return;
 
-      // If player moves to another GRASS spot, player continues with the game. Print the feedback message and update the player's position on the map.
+      // If the player moves to a grass (i.e. x and y position of the player matches the x and y position of a grass), the game continues with a safe message
       case GRASS:
         console.log(FEEDBACK_SAFE_MSG);
         break;
 
-      // If player moves to the HAT, player wins the game. Print the win message and end the game.
+      // If the player moves to a hat (i.e. x and y position of the player matches the x and y position of the hat), the game ends with a win message 
       case HAT:
         console.log(FEEDBACK_WIN_MSG);
         this.#end();
-        break;
+        return;
 
-      // If player moves to an unknown tile type, print the unknown tile type message and end the game.  
+      // If the player moves to an unknown tile type (i.e. x and y position of the player matches the x and y position of a tile that is not a hole, grass, or hat), the game ends with an unknown tile type message
       default:
         console.log("Unknown tile type!");
-        break;
+        this.#end();
+        return;
     }
 
     // Update the player's position on the map
     this.field[this.playerRow][this.playerCol] = PLAYER;
 
-    // Print the updated field after the player's move
-    this.printField();
   }
 
   //  * start() a public method of the class to start the game
@@ -151,78 +198,46 @@ class Field {
     // Set the hat's position on the field
     this.setHat();
 
-    // Print the initial field
-    this.printField();
-
     while (this.gamePlay) {
-      
-      const input = prompt("What is your move? W(up), A(left), S(down), D(right) to move, Q to quit: ").toUpperCase();
-      
-      let flagInvalid = false;     
+      // Print the current field
+      this.printField();
 
+      // Prompt the user for input
+      const input = prompt("Enter (w)up, (s)down, (a)left, (d)right. Press (q) to quit: ");
+      let flagInvalid = false; // Flag to track invalid input
       let feedback = "";
 
-      switch (input) {
-        
+      // Handle the input
+      switch (input.toUpperCase()) {
         case UP:
-          if (this.playerRow > 0) {
-            this.playerRow--;
-            feedback = FEEDBACK_UP;
-          } else {
-            console.log(FEEDBACK_OUT_MSG);
-            this.#end();
-          }
+          feedback = FEEDBACK_UP;
           break;
-
         case DOWN:
-          if (this.playerRow < ROWS - 1) {
-            this.playerRow++;
-            feedback = FEEDBACK_DOWN;
-          } else {
-            console.log(FEEDBACK_OUT_MSG);
-            this.#end();
-          }
+          feedback = FEEDBACK_DOWN;
           break;
-
         case LEFT:
-          if (this.playerCol > 0) {
-            this.playerCol--;
-            feedback = FEEDBACK_LEFT;
-          } else {
-            console.log(FEEDBACK_OUT_MSG);
-            this.#end();
-          }
+          feedback = FEEDBACK_LEFT;
           break;
-
         case RIGHT:
-          if (this.playerCol < COLS - 1) {
-            this.playerCol++;
-            feedback = FEEDBACK_RIGHT;
-          } else {
-            console.log(FEEDBACK_OUT_MSG);
-            this.#end();
-          }
+          feedback = FEEDBACK_RIGHT;
           break;
-
         case QUIT:
-          console.log(FEEDBACK_QUIT_MSG);
+          console.log(FEEDBACK_QUIT);
           this.#end();
-          break;
-
+          return; // Exit the loop after ending the game
         default:
           feedback = FEEDBACK_INVALID;
           flagInvalid = true;
           break;
-          
+
       }
 
+      // Provide feedback for the input
       this.updateMove(feedback);
 
+      // If the input is valid, update the game
       if (!flagInvalid) {
-
-        // Check the game state
-        this.updateGame();
-
+        this.updateGame(input.toUpperCase());
       }
     }
   }
@@ -237,7 +252,7 @@ class Field {
 // * Generate a new field - using Field's static method: generateField
 const createField = Field.generateField(ROWS, COLS, PERCENT);
 
-// *Generate a welcome message
+// * Generate a welcome message
 Field.welcomeMsg("\n************WELCOME TO FIND YOUR HAT************\n");
 
 // * Create a new instance of the game
